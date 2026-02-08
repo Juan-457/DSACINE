@@ -1,0 +1,34 @@
+name: Auto Commit DSA Cine
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/30 * * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  auto-commit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure git user
+        run: |
+          git config user.name "dsa-cine-bot"
+          git config user.email "dsa-cine-bot@users.noreply.github.com"
+
+      - name: Commit and push changes if any
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git add -A
+            git commit -m "chore: auto-commit cambios del sitio DSA Cine"
+            git push
+          else
+            echo "No hay cambios para commitear"
+          fi
