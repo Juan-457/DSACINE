@@ -1,35 +1,21 @@
-name: Auto Commit DSA Cine
+name: Auto-merge Codex PRs
 
 on:
-  workflow_dispatch:
-  schedule:
-    - cron: '*/30 * * * *'
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
-  auto-commit:
-    if: github.actor != 'github-actions[bot]'
+  automerge:
     runs-on: ubuntu-latest
+    if: startsWith(github.head_ref, 'codex/') && github.event.pull_request.draft == false
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Configure git user
-        run: |
-          git config user.name "dsa-cine-bot"
-          git config user.email "dsa-cine-bot@users.noreply.github.com"
-
-      - name: Commit and push changes if any
-        run: |
-          if [[ -n "$(git status --porcelain)" ]]; then
-            git add -A
-            git commit -m "chore: auto-commit cambios del sitio DSA Cine" || exit 0
-            git push origin HEAD:main
-          else
-            echo "No hay cambios para commitear"
-          fi
+      - name: Enable auto-merge (squash)
+        run: gh pr merge "$PR_URL" --squash --auto --delete-branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
