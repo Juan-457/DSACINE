@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   auto-commit:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
 
     steps:
@@ -27,8 +28,8 @@ jobs:
         run: |
           if [[ -n "$(git status --porcelain)" ]]; then
             git add -A
-            git commit -m "chore: auto-commit cambios del sitio DSA Cine"
-            git push
+            git commit -m "chore: auto-commit cambios del sitio DSA Cine" || exit 0
+            git push origin HEAD:main
           else
             echo "No hay cambios para commitear"
           fi
